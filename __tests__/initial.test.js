@@ -6,17 +6,17 @@ const formatToPaths = {
   json: {
     before: path.join(__dirname, '__fixtures__/before.json'),
     after: path.join(__dirname, '__fixtures__/after.json'),
-    result: path.join(__dirname, '__fixtures__/flatResult.txt'),
+    result: path.join(__dirname, '__fixtures__/result.txt'),
   },
   yml: {
     before: path.join(__dirname, '__fixtures__/before.yml'),
     after: path.join(__dirname, '__fixtures__/after.yml'),
-    result: path.join(__dirname, '__fixtures__/flatResult.txt'),
+    result: path.join(__dirname, '__fixtures__/result.txt'),
   },
   ini: {
     before: path.join(__dirname, '__fixtures__/before.ini'),
     after: path.join(__dirname, '__fixtures__/after.ini'),
-    result: path.join(__dirname, '__fixtures__/flatResult.txt'),
+    result: path.join(__dirname, '__fixtures__/result.txt'),
   },
 };
 
