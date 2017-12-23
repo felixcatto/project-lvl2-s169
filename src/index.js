@@ -1,17 +1,18 @@
 import yaml from 'js-yaml';
 import ini from 'ini';
 import fs from 'fs';
+import path from 'path';
 import _ from 'lodash';
 
 
-const formatToParser = {
+const extensionToParser = {
   json: JSON.parse,
   yml: yaml.safeLoad,
   ini: ini.parse,
 };
-export const supportedFormats = ['yml', 'json', 'ini'];
-export const defaultFormat = 'json';
-export const getFileContent = path => fs.readFileSync(path).toString();
+export const supportedFormats = ['object', 'plain'];
+export const defaultFormat = 'object';
+export const getFileContent = filepath => fs.readFileSync(filepath).toString();
 
 const makeAst = (objBefore, objAfter) => {
   const hasNestedData = (obj, key) => typeof obj[key] === 'object';
@@ -128,10 +129,11 @@ const render = (ast) => {
   return `{\n${rows}}\n`;
 };
 
-export const gendiff = (path1, path2, format) => {
+export const gendiff = (path1, path2) => {
+  const extension = path.extname(path1).slice(1);
   const data1 = getFileContent(path1);
   const data2 = getFileContent(path2);
-  const parse = formatToParser[format];
+  const parse = extensionToParser[extension];
   const ast = makeAst(parse(data1), parse(data2));
   return render(ast);
 };

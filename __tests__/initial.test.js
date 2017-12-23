@@ -23,21 +23,21 @@ const formatToPaths = {
 
 test('is correct render - JSON', () => {
   const paths = formatToPaths.json;
-  const diff = gendiff(paths.before, paths.after, 'json');
+  const diff = gendiff(paths.before, paths.after);
   const expected = getFileContent(paths.result);
   expect(diff).toBe(expected);
 });
 
 test('is correct render - YAML', () => {
   const paths = formatToPaths.yml;
-  const diff = gendiff(paths.before, paths.after, 'yml');
+  const diff = gendiff(paths.before, paths.after);
   const expected = getFileContent(paths.result);
   expect(diff).toBe(expected);
 });
 
 test('is correct render - INI', () => {
   const paths = formatToPaths.ini;
-  const diff = gendiff(paths.before, paths.after, 'ini');
+  const diff = gendiff(paths.before, paths.after);
   const expected = getFileContent(paths.result);
   expect(diff).toBe(expected);
 });
