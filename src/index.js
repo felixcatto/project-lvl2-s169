@@ -1,4 +1,5 @@
 import yaml from 'js-yaml';
+import ini from 'ini';
 import fs from 'fs';
 import _ from 'lodash';
 
@@ -6,6 +7,7 @@ import _ from 'lodash';
 const formatToParser = {
   json: JSON.parse,
   yml: yaml.safeLoad,
+  ini: ini.parse,
 };
 export const supportedFormats = ['yml', 'json', 'ini'];
 export const defaultFormat = 'json';

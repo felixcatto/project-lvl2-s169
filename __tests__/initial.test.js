@@ -13,6 +13,11 @@ const formatToPaths = {
     after: path.join(__dirname, '__fixtures__/after.yml'),
     result: path.join(__dirname, '__fixtures__/flatResult.txt'),
   },
+  ini: {
+    before: path.join(__dirname, '__fixtures__/before.ini'),
+    after: path.join(__dirname, '__fixtures__/after.ini'),
+    result: path.join(__dirname, '__fixtures__/flatResult.txt'),
+  },
 };
 
 
@@ -26,6 +31,13 @@ test('is correct render - JSON', () => {
 test('is correct render - YAML', () => {
   const paths = formatToPaths.yml;
   const diff = gendiff(paths.before, paths.after, 'yml');
+  const expected = getFileContent(paths.result);
+  expect(diff).toBe(expected);
+});
+
+test('is correct render - INI', () => {
+  const paths = formatToPaths.ini;
+  const diff = gendiff(paths.before, paths.after, 'ini');
   const expected = getFileContent(paths.result);
   expect(diff).toBe(expected);
 });
