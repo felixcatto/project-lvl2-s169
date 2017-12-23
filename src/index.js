@@ -10,6 +10,7 @@ const extensionToParser = {
   yml: yaml.safeLoad,
   ini: ini.parse,
 };
+
 export const supportedFormats = ['object', 'plain'];
 export const defaultFormat = 'object';
 export const getFileContent = filepath => fs.readFileSync(filepath).toString();
@@ -74,7 +75,7 @@ const makeAst = (objBefore, objAfter) => {
   return iter(objBefore, objAfter, 1);
 };
 
-const render = (ast) => {
+const objectRenderer = (ast) => {
   const defaultPadding = '  ';
   const isObject = value => typeof value === 'object';
   const dataToString = (key, value, padding, modifier) => {
@@ -129,11 +130,51 @@ const render = (ast) => {
   return `{\n${rows}}\n`;
 };
 
-export const gendiff = (path1, path2) => {
+const plainRenderer = (ast) => {
+  const isObject = value => typeof value === 'object';
+  const makeString = (acc, row, keyPrefix) => {
+    const {
+      key,
+      type,
+      newValue,
+      oldValue,
+      children,
+    } = row;
+    if (type === 'added') {
+      const value = isObject(newValue)
+        ? 'was added with complex value'
+        : `was added with value '${newValue}'`;
+      return `${acc}Property '${keyPrefix}${key}' ${value}\n`;
+    } else if (type === 'deleted') {
+      return `${acc}Property '${keyPrefix}${key}' was removed\n`;
+    } else if (type === 'modified') {
+      return `${acc}Property '${keyPrefix}${key}' was updated. From '${oldValue}' to '${newValue}'\n`;
+    } else if (type === 'not-modified') {
+      return acc;
+    } else if (type === 'nested') {
+      const innerRows = children
+        .map(innerRow => makeString('', innerRow, `${keyPrefix}${key}.`))
+        .join('');
+      return `${acc}${innerRows}`;
+    }
+    throw new Error('impossible case');
+  };
+  return ast
+    .map(row => makeString('', row, ''))
+    .join('');
+};
+
+const formatToRenderer = {
+  object: objectRenderer,
+  plain: plainRenderer,
+};
+
+export const gendiff = (path1, path2, format = defaultFormat) => {
   const extension = path.extname(path1).slice(1);
   const data1 = getFileContent(path1);
   const data2 = getFileContent(path2);
   const parse = extensionToParser[extension];
   const ast = makeAst(parse(data1), parse(data2));
+  const render = formatToRenderer[format];
   return render(ast);
 };
