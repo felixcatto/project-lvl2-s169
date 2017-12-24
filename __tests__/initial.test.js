@@ -6,8 +6,9 @@ const formatToPaths = {
   json: {
     before: path.join(__dirname, '__fixtures__/before.json'),
     after: path.join(__dirname, '__fixtures__/after.json'),
-    objectResult: path.join(__dirname, '__fixtures__/objectResultJSON.txt'),
-    plainResult: path.join(__dirname, '__fixtures__/plainResultJSON.txt'),
+    objectResult: path.join(__dirname, '__fixtures__/resultJsonToObject.txt'),
+    plainResult: path.join(__dirname, '__fixtures__/resultJsonToPlain.txt'),
+    jsonResult: path.join(__dirname, '__fixtures__/resultJsonToJson.txt'),
   },
   yml: {
     before: path.join(__dirname, '__fixtures__/before.yml'),
@@ -49,5 +50,12 @@ test('is correct render - JSON -> PLAIN', () => {
   const paths = formatToPaths.json;
   const diff = gendiff(paths.before, paths.after, 'plain');
   const expected = getFileContent(paths.plainResult);
+  expect(diff).toBe(expected);
+});
+
+test('is correct render - JSON -> JSON', () => {
+  const paths = formatToPaths.json;
+  const diff = gendiff(paths.before, paths.after, 'json');
+  const expected = getFileContent(paths.jsonResult);
   expect(diff).toBe(expected);
 });
