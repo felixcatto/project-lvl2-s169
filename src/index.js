@@ -26,7 +26,6 @@ const makeAst = (objBefore, objAfter) => {
         return {
           key,
           oldValue: before[key],
-          newValue: null,
           type: 'deleted',
           lvl: nestedLvl,
           children: [],
@@ -34,7 +33,6 @@ const makeAst = (objBefore, objAfter) => {
       } else if (!beforeKeys.includes(key) && afterKeys.includes(key)) {
         return {
           key,
-          oldValue: null,
           newValue: after[key],
           type: 'added',
           lvl: nestedLvl,
@@ -44,8 +42,6 @@ const makeAst = (objBefore, objAfter) => {
         const children = iter(before[key], after[key], nestedLvl + 1);
         return {
           key,
-          oldValue: null,
-          newValue: null,
           type: 'nested',
           lvl: nestedLvl,
           children,
