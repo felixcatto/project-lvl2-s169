@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import program from 'commander';
-import { gendiff, supportedFormats, defaultFormat } from '../';
+import { gendiff } from '../';
+import { supportedFormats, defaultFormat } from '../renderers';
+
 
 const supportedRegex = new RegExp(`^(${supportedFormats.join('|')})$`, 'i');
 program

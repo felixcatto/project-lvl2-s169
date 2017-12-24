@@ -1,18 +1,10 @@
-import yaml from 'js-yaml';
-import ini from 'ini';
 import fs from 'fs';
 import path from 'path';
 import _ from 'lodash';
+import { getRenderer, defaultFormat } from './renderers';
+import getParser from './parsers';
 
 
-const extensionToParser = {
-  json: JSON.parse,
-  yml: yaml.safeLoad,
-  ini: ini.parse,
-};
-
-export const supportedFormats = ['object', 'plain'];
-export const defaultFormat = 'object';
 export const getFileContent = filepath => fs.readFileSync(filepath).toString();
 
 const makeAst = (objBefore, objAfter) => {
@@ -71,103 +63,12 @@ const makeAst = (objBefore, objAfter) => {
   return iter(objBefore, objAfter, 1);
 };
 
-const objectRenderer = (ast) => {
-  const defaultPadding = '  ';
-  const isObject = value => typeof value === 'object';
-  const dataToString = (key, value, padding, modifier) => {
-    if (isObject(value)) {
-      const start = `${padding}${modifier}${key}: {\n`;
-      const end = `${padding}${defaultPadding}}\n`;
-      const rows = Object.keys(value).map((innerKey) => {
-        const innerValue = value[innerKey];
-        const innerPadding = `${padding}${defaultPadding.repeat(2)}`;
-        if (isObject(innerValue)) {
-          return dataToString(innerKey, innerValue, innerPadding, defaultPadding);
-        }
-        return `${innerPadding}${defaultPadding}${innerKey}: ${innerValue}\n`;
-      });
-      return `${start}${rows.join('')}${end}`;
-    }
-    return `${padding}${modifier}${key}: ${value}\n`;
-  };
-  const makeString = (row) => {
-    const {
-      key,
-      type,
-      newValue,
-      oldValue,
-      lvl,
-      children,
-    } = row;
-    const padding = defaultPadding.repeat((lvl * 2) - 1);
-    if (type === 'added') {
-      return `${dataToString(key, newValue, padding, '+ ')}`;
-    } else if (type === 'deleted') {
-      return `${dataToString(key, oldValue, padding, '- ')}`;
-    } else if (type === 'modified') {
-      const oldString = dataToString(key, oldValue, padding, '- ');
-      const newString = dataToString(key, newValue, padding, '+ ');
-      return [oldString, newString];
-    } else if (type === 'not-modified') {
-      return `${dataToString(key, oldValue, padding, '  ')}`;
-    } else if (type === 'nested') {
-      const start = `${padding}${defaultPadding}${key}: {\n`;
-      const innerRows = _.flatten(children.map(makeString)).join('');
-      const end = `${padding}${defaultPadding}}\n`;
-      return `${start}${innerRows}${end}`;
-    }
-    throw new Error('impossible case');
-  };
-  const rows = _.flatten(ast.map(makeString)).join('');
-  return `{\n${rows}}\n`;
-};
-
-const plainRenderer = (ast) => {
-  const isObject = value => typeof value === 'object';
-  const makeString = (row, keyPrefix) => {
-    const {
-      key,
-      type,
-      newValue,
-      oldValue,
-      children,
-    } = row;
-    if (type === 'added') {
-      const value = isObject(newValue)
-        ? 'was added with complex value'
-        : `was added with value '${newValue}'`;
-      return `Property '${keyPrefix}${key}' ${value}\n`;
-    } else if (type === 'deleted') {
-      return `Property '${keyPrefix}${key}' was removed\n`;
-    } else if (type === 'modified') {
-      const oldValueStr = isObject(oldValue) ? 'complex value' : `'${oldValue}'`;
-      const newValueStr = isObject(newValue) ? 'complex value' : `'${newValue}'`;
-      return `Property '${keyPrefix}${key}' was updated. From ${oldValueStr} to ${newValueStr}\n`;
-    } else if (type === 'not-modified') {
-      return '';
-    } else if (type === 'nested') {
-      return children
-        .map(innerRow => makeString(innerRow, `${keyPrefix}${key}.`))
-        .join('');
-    }
-    throw new Error('impossible case');
-  };
-  return ast
-    .map(row => makeString(row, ''))
-    .join('');
-};
-
-const formatToRenderer = {
-  object: objectRenderer,
-  plain: plainRenderer,
-};
-
 export const gendiff = (path1, path2, format = defaultFormat) => {
   const extension = path.extname(path1).slice(1);
+  const render = getRenderer(format);
+  const parse = getParser(extension);
   const data1 = getFileContent(path1);
   const data2 = getFileContent(path2);
-  const parse = extensionToParser[extension];
   const ast = makeAst(parse(data1), parse(data2));
-  const render = formatToRenderer[format];
   return render(ast);
 };
