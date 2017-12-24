@@ -144,7 +144,9 @@ const plainRenderer = (ast) => {
     } else if (type === 'deleted') {
       return `Property '${keyPrefix}${key}' was removed\n`;
     } else if (type === 'modified') {
-      return `Property '${keyPrefix}${key}' was updated. From '${oldValue}' to '${newValue}'\n`;
+      const oldValueStr = isObject(oldValue) ? 'complex value' : `'${oldValue}'`;
+      const newValueStr = isObject(newValue) ? 'complex value' : `'${newValue}'`;
+      return `Property '${keyPrefix}${key}' was updated. From ${oldValueStr} to ${newValueStr}\n`;
     } else if (type === 'not-modified') {
       return '';
     } else if (type === 'nested') {
