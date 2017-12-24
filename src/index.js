@@ -21,56 +21,56 @@ const makeAst = (objBefore, objAfter) => {
     const beforeKeys = Object.keys(before);
     const afterKeys = Object.keys(after);
     const unionKeys = _.union(beforeKeys, afterKeys).sort();
-    return unionKeys.reduce((acc, key) => {
+    return unionKeys.map((key) => {
       if (beforeKeys.includes(key) && !afterKeys.includes(key)) {
-        return [...acc, {
+        return {
           key,
           oldValue: before[key],
           newValue: null,
           type: 'deleted',
           lvl: nestedLvl,
           children: [],
-        }];
+        };
       } else if (!beforeKeys.includes(key) && afterKeys.includes(key)) {
-        return [...acc, {
+        return {
           key,
           oldValue: null,
           newValue: after[key],
           type: 'added',
           lvl: nestedLvl,
           children: [],
-        }];
+        };
       } else if (hasNestedData(before, key) && hasNestedData(after, key)) {
         const children = iter(before[key], after[key], nestedLvl + 1);
-        return [...acc, {
+        return {
           key,
           oldValue: null,
           newValue: null,
           type: 'nested',
           lvl: nestedLvl,
           children,
-        }];
+        };
       } else if (before[key] !== after[key]) {
-        return [...acc, {
+        return {
           key,
           oldValue: before[key],
           newValue: after[key],
           type: 'modified',
           lvl: nestedLvl,
           children: [],
-        }];
+        };
       } else if (before[key] === after[key]) {
-        return [...acc, {
+        return {
           key,
           oldValue: before[key],
           newValue: after[key],
           type: 'not-modified',
           lvl: nestedLvl,
           children: [],
-        }];
+        };
       }
       throw new Error('impossible case');
-    }, []);
+    });
   };
   return iter(objBefore, objAfter, 1);
 };
