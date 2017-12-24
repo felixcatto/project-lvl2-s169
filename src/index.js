@@ -94,7 +94,7 @@ const objectRenderer = (ast) => {
     }
     return `${padding}${modifier}${key}: ${value}\n`;
   };
-  const makeString = (acc, row) => {
+  const makeString = (row) => {
     const {
       key,
       type,
@@ -105,34 +105,30 @@ const objectRenderer = (ast) => {
     } = row;
     const padding = defaultPadding.repeat((lvl * 2) - 1);
     if (type === 'added') {
-      return `${acc}${dataToString(key, newValue, padding, '+ ')}`;
+      return `${dataToString(key, newValue, padding, '+ ')}`;
     } else if (type === 'deleted') {
-      return `${acc}${dataToString(key, oldValue, padding, '- ')}`;
+      return `${dataToString(key, oldValue, padding, '- ')}`;
     } else if (type === 'modified') {
       const oldString = dataToString(key, oldValue, padding, '- ');
       const newString = dataToString(key, newValue, padding, '+ ');
-      return `${acc}${oldString}${newString}`;
+      return [oldString, newString];
     } else if (type === 'not-modified') {
-      return `${acc}${dataToString(key, oldValue, padding, '  ')}`;
+      return `${dataToString(key, oldValue, padding, '  ')}`;
     } else if (type === 'nested') {
       const start = `${padding}${defaultPadding}${key}: {\n`;
-      const innerRows = children
-        .map(innerRow => makeString('', innerRow))
-        .join('');
+      const innerRows = _.flatten(children.map(makeString)).join('');
       const end = `${padding}${defaultPadding}}\n`;
-      return `${acc}${start}${innerRows}${end}`;
+      return `${start}${innerRows}${end}`;
     }
     throw new Error('impossible case');
   };
-  const rows = ast
-    .map(row => makeString('', row))
-    .join('');
+  const rows = _.flatten(ast.map(makeString)).join('');
   return `{\n${rows}}\n`;
 };
 
 const plainRenderer = (ast) => {
   const isObject = value => typeof value === 'object';
-  const makeString = (acc, row, keyPrefix) => {
+  const makeString = (row, keyPrefix) => {
     const {
       key,
       type,
@@ -144,23 +140,22 @@ const plainRenderer = (ast) => {
       const value = isObject(newValue)
         ? 'was added with complex value'
         : `was added with value '${newValue}'`;
-      return `${acc}Property '${keyPrefix}${key}' ${value}\n`;
+      return `Property '${keyPrefix}${key}' ${value}\n`;
     } else if (type === 'deleted') {
-      return `${acc}Property '${keyPrefix}${key}' was removed\n`;
+      return `Property '${keyPrefix}${key}' was removed\n`;
     } else if (type === 'modified') {
-      return `${acc}Property '${keyPrefix}${key}' was updated. From '${oldValue}' to '${newValue}'\n`;
+      return `Property '${keyPrefix}${key}' was updated. From '${oldValue}' to '${newValue}'\n`;
     } else if (type === 'not-modified') {
-      return acc;
+      return '';
     } else if (type === 'nested') {
-      const innerRows = children
-        .map(innerRow => makeString('', innerRow, `${keyPrefix}${key}.`))
+      return children
+        .map(innerRow => makeString(innerRow, `${keyPrefix}${key}.`))
         .join('');
-      return `${acc}${innerRows}`;
     }
     throw new Error('impossible case');
   };
   return ast
-    .map(row => makeString('', row, ''))
+    .map(row => makeString(row, ''))
     .join('');
 };
 
