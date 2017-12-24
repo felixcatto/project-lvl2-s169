@@ -1,5 +1,7 @@
+import _ from 'lodash';
+
 export default (ast) => {
-  const isObject = value => typeof value === 'object';
+  const valueToStr = value => (_.isObject(value) ? 'complex value' : `'${value}'`);
   const makeString = (row, keyPrefix) => {
     const {
       key,
@@ -9,15 +11,13 @@ export default (ast) => {
       children,
     } = row;
     if (type === 'added') {
-      const value = isObject(newValue)
-        ? 'was added with complex value'
-        : `was added with value '${newValue}'`;
-      return `Property '${keyPrefix}${key}' ${value}\n`;
+      const prefix = _.isObject(newValue) ? '' : 'value ';
+      return `Property '${keyPrefix}${key}' was added with ${prefix}${valueToStr(newValue)}\n`;
     } else if (type === 'deleted') {
       return `Property '${keyPrefix}${key}' was removed\n`;
     } else if (type === 'modified') {
-      const oldValueStr = isObject(oldValue) ? 'complex value' : `'${oldValue}'`;
-      const newValueStr = isObject(newValue) ? 'complex value' : `'${newValue}'`;
+      const oldValueStr = valueToStr(oldValue);
+      const newValueStr = valueToStr(newValue);
       return `Property '${keyPrefix}${key}' was updated. From ${oldValueStr} to ${newValueStr}\n`;
     } else if (type === 'not-modified') {
       return '';

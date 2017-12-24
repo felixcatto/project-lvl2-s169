@@ -6,8 +6,8 @@ const formatToPaths = {
   json: {
     before: path.join(__dirname, '__fixtures__/before.json'),
     after: path.join(__dirname, '__fixtures__/after.json'),
-    objectResult: path.join(__dirname, '__fixtures__/objectResult.txt'),
-    plainResult: path.join(__dirname, '__fixtures__/plainResult.txt'),
+    objectResult: path.join(__dirname, '__fixtures__/objectResultJSON.txt'),
+    plainResult: path.join(__dirname, '__fixtures__/plainResultJSON.txt'),
   },
   yml: {
     before: path.join(__dirname, '__fixtures__/before.yml'),

@@ -2,15 +2,14 @@ import _ from 'lodash';
 
 export default (ast) => {
   const defaultPadding = '  ';
-  const isObject = value => typeof value === 'object';
   const dataToString = (key, value, padding, modifier) => {
-    if (isObject(value)) {
+    if (_.isObject(value)) {
       const start = `${padding}${modifier}${key}: {\n`;
       const end = `${padding}${defaultPadding}}\n`;
       const rows = Object.keys(value).map((innerKey) => {
         const innerValue = value[innerKey];
         const innerPadding = `${padding}${defaultPadding.repeat(2)}`;
-        if (isObject(innerValue)) {
+        if (_.isObject(innerValue)) {
           return dataToString(innerKey, innerValue, innerPadding, defaultPadding);
         }
         return `${innerPadding}${defaultPadding}${innerKey}: ${innerValue}\n`;
